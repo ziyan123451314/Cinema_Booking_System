@@ -1,0 +1,135 @@
+@model CinemaBookingSystem.Models.ViewModels.MovieFormViewModel
+@{
+    ViewData["Title"] = "Add Movie";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2 text-warning"></i>Add New Movie</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+
+            <div class="row g-3">
+                <!-- Left Column -->
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label fw-semibold"></label>
+                        <input asp-for="Title" class="form-control" placeholder="Movie Title" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Movie synopsis..."></textarea>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Director" class="form-label fw-semibold"></label>
+                            <input asp-for="Director" class="form-control" placeholder="Director name" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Cast" class="form-label fw-semibold"></label>
+                            <input asp-for="Cast" class="form-control" placeholder="Main cast" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Genre" class="form-label fw-semibold"></label>
+                            <input asp-for="Genre" class="form-control" placeholder="e.g. Action" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Language" class="form-label fw-semibold"></label>
+                            <input asp-for="Language" class="form-control" placeholder="e.g. English" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Rating" class="form-label fw-semibold"></label>
+                            <select asp-for="Rating" class="form-select">
+                                <option value="">Select</option>
+                                <option>G</option><option>PG</option><option>PG-13</option><option>R</option><option>NC-17</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Duration" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <input asp-for="Duration" class="form-control" type="number" min="1" />
+                                <span class="input-group-text">min</span>
+                            </div>
+                            <span asp-validation-for="Duration" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Price" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">RM</span>
+                                <input asp-for="Price" class="form-control" type="number" step="0.01" min="0.01" />
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ReleasedAt" class="form-label fw-semibold"></label>
+                            <input asp-for="ReleasedAt" class="form-control" type="date" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="form-label fw-semibold"></label>
+                            <select asp-for="CategoryId" class="form-select" asp-items="@(new SelectList(Model.Categories, "Id", "Name"))">
+                                <option value="">-- Select Category --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check mb-0">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive" class="form-check-label fw-semibold">Active (show in catalog)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Image Upload -->
+                <div class="col-md-4">
+                    <label asp-for="ImageFile" class="form-label fw-semibold">
+                        <i class="bi bi-image me-1 text-primary"></i>Movie Poster
+                    </label>
+                    <div class="border rounded-3 p-3 text-center" id="imagePreviewBox">
+                        <img id="imagePreview" src="/img/no-image.png" alt="Preview"
+                             class="img-fluid rounded mb-2" style="max-height:250px;object-fit:contain;display:none" />
+                        <div id="imagePlaceholder">
+                            <i class="bi bi-image display-4 text-muted"></i>
+                            <p class="text-muted small mt-2">Upload movie poster image</p>
+                        </div>
+                    </div>
+                    <input asp-for="ImageFile" type="file" class="form-control mt-2" accept="image/*" id="imageFileInput"
+                           onchange="previewImage(this)" />
+                    <small class="text-muted">Accepted: JPG, PNG, GIF, WEBP. Max 5MB.</small>
+                    <span asp-validation-for="ImageFile" class="text-danger small d-block"></span>
+                </div>
+            </div>
+
+            <hr class="mt-4" />
+            <button type="submit" class="btn btn-warning px-5 py-2 fw-semibold">
+                <i class="bi bi-save me-2"></i>Create Movie
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('imagePlaceholder');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

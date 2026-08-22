@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CineMax Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+</head>
+<body class="admin-body">
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-dark bg-primary sticky-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/Admin">
+                <i class="bi bi-camera-reels-fill me-2"></i>CineMax Admin
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a class="text-light text-decoration-none small" asp-controller="Home" asp-action="Index" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>View Site
+                </a>
+                <div class="dropdown">
+                    <a class="text-light text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-1"></i>@User.Identity?.Name
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav class="admin-sidebar bg-dark text-white p-3" style="min-height: calc(100vh - 56px); width: 240px; min-width: 240px;">
+            <ul class="nav flex-column">
+                <li class="nav-item mb-1">
+                    <a class="nav-link text-white @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active bg-primary rounded" : "")"
+                       href="/Admin">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item mb-1 mt-3">
+                    <small class="text-muted text-uppercase fw-semibold px-3">Management</small>
+                </li>
+                <li class="nav-item mb-1">
+                    <a class="nav-link text-white @(ViewContext.RouteData.Values["controller"]?.ToString() == "Members" ? "active bg-primary rounded" : "")"
+                       href="/Admin/Members">
+                        <i class="bi bi-people-fill me-2"></i>Members
+                    </a>
+                </li>
+                <li class="nav-item mb-1">
+                    <a class="nav-link text-white @(ViewContext.RouteData.Values["controller"]?.ToString() == "Categories" ? "active bg-primary rounded" : "")"
+                       href="/Admin/Categories">
+                        <i class="bi bi-tags-fill me-2"></i>Categories
+                    </a>
+                </li>
+                <li class="nav-item mb-1">
+                    <a class="nav-link text-white @(ViewContext.RouteData.Values["controller"]?.ToString() == "Movies" ? "active bg-primary rounded" : "")"
+                       href="/Admin/Movies">
+                        <i class="bi bi-film me-2"></i>Movies
+                    </a>
+                </li>
+                <li class="nav-item mb-1">
+                    <a class="nav-link text-white @(ViewContext.RouteData.Values["controller"]?.ToString() == "Showtimes" ? "active bg-primary rounded" : "")"
+                       href="/Admin/Showtimes">
+                        <i class="bi bi-calendar-event me-2"></i>Showtimes
+                    </a>
+                </li>
+                <li class="nav-item mb-1 mt-3">
+                    <small class="text-muted text-uppercase fw-semibold px-3">Orders</small>
+                </li>
+                <li class="nav-item mb-1">
+                    <a class="nav-link text-white @(ViewContext.RouteData.Values["controller"]?.ToString() == "Orders" ? "active bg-primary rounded" : "")"
+                       href="/Admin/Orders">
+                        <i class="bi bi-receipt me-2"></i>All Orders
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow-1 p-4 bg-light" style="min-height: calc(100vh - 56px);">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

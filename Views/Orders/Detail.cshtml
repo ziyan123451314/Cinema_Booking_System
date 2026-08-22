@@ -1,0 +1,140 @@
+@model CinemaBookingSystem.Models.Order
+@{
+    ViewData["Title"] = $"Order #{Model.Id}";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Order #@Model.Id</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+
+<div class="row g-4">
+    <!-- Ticket Table -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-dark text-white fw-bold">
+                <i class="bi bi-ticket-perforated me-2"></i>Booked Tickets
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Movie</th><th>Date</th><th>Time</th><th>Hall</th><th class="text-center">Qty</th><th class="text-end">Amount</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <tr>
+                                <td class="fw-bold">@item.MovieTitle</td>
+                                <td>@item.ShowDate.ToString("dd MMM yyyy")</td>
+                                <td>@item.ShowTime.ToString(@"hh\:mm")</td>
+                                <td>@item.Hall</td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end">RM @item.SubTotal.ToString("F2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold">Total:</td>
+                            <td class="text-end fw-bold text-primary fs-5">RM @Model.TotalAmount.ToString("F2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Update Status -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-arrow-repeat me-2"></i>Update Order Status</div>
+            <div class="card-body">
+                <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post" class="d-flex gap-2 flex-wrap">
+                    @Html.AntiForgeryToken()
+                    <select name="status" class="form-select w-auto">
+                        @foreach (var s in Enum.GetValues<CinemaBookingSystem.Models.OrderStatus>())
+                        {
+                            <option value="@s" selected="@(Model.Status == s)">@s</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Update Status
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Update Payment -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-wallet2 me-2"></i>Update Payment Status</div>
+            <div class="card-body">
+                <form asp-action="UpdatePayment" asp-route-id="@Model.Id" method="post" class="d-flex gap-2 flex-wrap">
+                    @Html.AntiForgeryToken()
+                    <select name="paymentStatus" class="form-select w-auto">
+                        @foreach (var ps in Enum.GetValues<CinemaBookingSystem.Models.PaymentStatus>())
+                        {
+                            <option value="@ps" selected="@(Model.PaymentStatus == ps)">@ps</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Update Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white fw-bold">
+                <i class="bi bi-info-circle me-2"></i>Order Info
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Order Date</dt>
+                    <dd class="col-7">@Model.OrderDate.ToString("dd MMM yyyy HH:mm")</dd>
+                    <dt class="col-5">Status</dt>
+                    <dd class="col-7">
+                        <span class="badge @(Model.Status == CinemaBookingSystem.Models.OrderStatus.Completed ? "bg-success" :
+                                             Model.Status == CinemaBookingSystem.Models.OrderStatus.Confirmed ? "bg-primary" :
+                                             Model.Status == CinemaBookingSystem.Models.OrderStatus.Cancelled ? "bg-danger" : "bg-warning text-dark")">
+                            @Model.Status
+                        </span>
+                    </dd>
+                    <dt class="col-5">Payment</dt>
+                    <dd class="col-7">@Model.PaymentMethod</dd>
+                    <dt class="col-5">Pay Status</dt>
+                    <dd class="col-7">
+                        <span class="badge @(Model.PaymentStatus == CinemaBookingSystem.Models.PaymentStatus.Paid ? "bg-success" :
+                                             Model.PaymentStatus == CinemaBookingSystem.Models.PaymentStatus.Refunded ? "bg-info" : "bg-secondary")">
+                            @Model.PaymentStatus
+                        </span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-dark text-white fw-bold">
+                <i class="bi bi-person me-2"></i>Customer Info
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Member</dt>
+                    <dd class="col-7">@(Model.User?.FullName ?? "-")</dd>
+                    <dt class="col-5">Contact</dt>
+                    <dd class="col-7">@Model.ContactName</dd>
+                    <dt class="col-5">Phone</dt>
+                    <dd class="col-7">@Model.ContactPhone</dd>
+                    <dt class="col-5">Email</dt>
+                    <dd class="col-7 text-truncate">@Model.ContactEmail</dd>
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <dt class="col-5">Notes</dt>
+                        <dd class="col-7">@Model.Notes</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>

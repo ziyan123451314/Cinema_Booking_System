@@ -1,0 +1,89 @@
+@model CinemaBookingSystem.Models.ViewModels.MemberListViewModel
+@{
+    ViewData["Title"] = "Member Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-people-fill me-2 text-primary"></i>Member Management</h2>
+</div>
+
+<!-- Search -->
+<form asp-action="Index" method="get" class="mb-4">
+    <div class="input-group" style="max-width:400px">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input name="search" value="@Model.SearchTerm" class="form-control" placeholder="Search by name or email..." />
+        <button type="submit" class="btn btn-primary">Search</button>
+        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        }
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th class="text-center">Status</th>
+                        <th>Registered</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var member in Model.Members)
+                    {
+                        <tr class="@(!member.IsActive ? "table-secondary" : "")">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width:36px;height:36px;font-size:14px;font-weight:bold;flex-shrink:0">
+                                        @(member.FullName?.Length > 0 ? member.FullName[0].ToString().ToUpper() : "?")
+                                    </div>
+                                    <span class="fw-semibold">@member.FullName</span>
+                                </div>
+                            </td>
+                            <td>@member.Email</td>
+                            <td>@(member.Phone ?? "-")</td>
+                            <td class="text-center">
+                                <span class="badge @(member.IsActive ? "bg-success" : "bg-danger")">
+                                    @(member.IsActive ? "Active" : "Disabled")
+                                </span>
+                            </td>
+                            <td>@member.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Detail" asp-route-id="@member.Id" class="btn btn-outline-primary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <form asp-action="ToggleStatus" asp-route-id="@member.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-@(member.IsActive ? "warning" : "success")" title="@(member.IsActive ? "Deactivate" : "Activate")">
+                                            <i class="bi bi-@(member.IsActive ? "person-x" : "person-check")"></i>
+                                        </button>
+                                    </form>
+                                    <form asp-action="Delete" asp-route-id="@member.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Delete this member?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Members.Any())
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-4">No members found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

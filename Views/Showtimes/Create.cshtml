@@ -1,0 +1,72 @@
+@model CinemaBookingSystem.Models.ViewModels.ShowtimeFormViewModel
+@{
+    ViewData["Title"] = "Add Showtime";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Add Showtime</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+
+<div class="card border-0 shadow-sm" style="max-width:700px">
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+
+            <div class="mb-3">
+                <label asp-for="MovieId" class="form-label fw-semibold"></label>
+                <select asp-for="MovieId" class="form-select" asp-items="@(new SelectList(Model.Movies, "Id", "Title", Model.MovieId))">
+                    <option value="">-- Select Movie --</option>
+                </select>
+                <span asp-validation-for="MovieId" class="text-danger small"></span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="ShowDate" class="form-label fw-semibold"></label>
+                    <input asp-for="ShowDate" type="date" class="form-control" />
+                    <span asp-validation-for="ShowDate" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ShowTime" class="form-label fw-semibold"></label>
+                    <input asp-for="ShowTime" type="time" class="form-control" />
+                    <span asp-validation-for="ShowTime" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Hall" class="form-label fw-semibold"></label>
+                    <select asp-for="Hall" class="form-select">
+                        <option>Hall 1</option><option>Hall 2</option><option>Hall 3</option>
+                        <option>Hall 4</option><option>IMAX</option><option>Gold Class</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TotalSeats" class="form-label fw-semibold"></label>
+                    <input asp-for="TotalSeats" type="number" class="form-control" min="1" max="500" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="AvailableSeats" class="form-label fw-semibold"></label>
+                    <input asp-for="AvailableSeats" type="number" class="form-control" min="0" max="500" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Price" class="form-label fw-semibold"></label>
+                    <div class="input-group">
+                        <span class="input-group-text">RM</span>
+                        <input asp-for="Price" type="number" step="0.01" class="form-control" />
+                    </div>
+                    <span asp-validation-for="Price" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check mb-0">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label fw-semibold">Active</label>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4" />
+            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-2"></i>Create Showtime</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
