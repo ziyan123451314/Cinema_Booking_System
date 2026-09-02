@@ -1,0 +1,133 @@
+@model CinemaBookingSystem.Models.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4"><i class="bi bi-credit-card me-2 text-primary"></i>Checkout</h2>
+
+    <div class="row g-4">
+        <!-- Checkout Form -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Contact Details</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="PlaceOrder" method="post" id="checkoutForm">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ContactName" class="form-label fw-semibold"></label>
+                            <input asp-for="ContactName" class="form-control" placeholder="Full Name" />
+                            <span asp-validation-for="ContactName" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ContactPhone" class="form-label fw-semibold"></label>
+                            <input asp-for="ContactPhone" class="form-control" placeholder="e.g. 0123456789" />
+                            <span asp-validation-for="ContactPhone" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ContactEmail" class="form-label fw-semibold"></label>
+                            <input asp-for="ContactEmail" class="form-control" placeholder="you@example.com" />
+                            <span asp-validation-for="ContactEmail" class="text-danger small"></span>
+                        </div>
+
+                        <hr />
+                        <h6 class="fw-bold mb-3"><i class="bi bi-wallet2 me-2"></i>Payment Method</h6>
+                        <div class="row g-3 mb-3">
+                            @foreach (var method in Enum.GetValues<CinemaBookingSystem.Models.PaymentMethod>())
+                            {
+                                <div class="col-6">
+                                    <div class="form-check border rounded-3 p-3 h-100">
+                                        <input class="form-check-input" type="radio" asp-for="PaymentMethod"
+                                               value="@method" id="pm_@method"
+                                               checked="@(method == CinemaBookingSystem.Models.PaymentMethod.Cash)" />
+                                        <label class="form-check-label fw-semibold" for="pm_@method">
+                                            @(method == CinemaBookingSystem.Models.PaymentMethod.Cash ? "Cash" :
+                                              method == CinemaBookingSystem.Models.PaymentMethod.CreditCard ? "Credit Card" :
+                                              method == CinemaBookingSystem.Models.PaymentMethod.OnlineBanking ? "Online Banking" : "E-Wallet")
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Notes" class="form-label fw-semibold">Special Requests (Optional)</label>
+                            <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Any special requests..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100 py-2 fw-bold fs-5">
+                            <i class="bi bi-bag-check me-2"></i>Place Order &mdash; RM @Model.Total.ToString("F2")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-ticket-perforated me-2"></i>Your Tickets</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in Model.CartItems)
+                        {
+                            <li class="list-group-item py-3">
+                                <div class="fw-bold">@item.Showtime?.Movie?.Title</div>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-calendar3 me-1"></i>@item.Showtime?.ShowDate.ToString("dd MMM yyyy")
+                                    &nbsp;<i class="bi bi-clock me-1"></i>@item.Showtime?.ShowTime.ToString(@"hh\:mm")
+                                    &nbsp;<i class="bi bi-building me-1"></i>@item.Showtime?.Hall
+                                </small>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <span class="small">@item.Quantity × RM @item.UnitPrice.ToString("F2")</span>
+                                    <span class="fw-bold">RM @item.SubTotal.ToString("F2")</span>
+                                </div>
+                            </li>
+                        }
+                        <li class="list-group-item bg-primary text-white">
+                            <div class="d-flex justify-content-between fw-bold fs-5">
+                                <span>Total</span>
+                                <span>RM @Model.Total.ToString("F2")</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. 询问用户是否允许桌面通知
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            }
+
+            // 2. 如果后台传来了错误信息，或者表单验证失败，弹出 Unsuccessful 桌面通知
+            @if (TempData["Error"] != null || !ViewData.ModelState.IsValid)
+            {
+                <text>
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("Booking Unsuccessful ❌", {
+                        body: "There was an issue with your order. Please check the details and try again.",
+                        icon: "https://cdn-icons-png.flaticon.com/512/1828/1828843.png" // 错误图标 (X)
+                    });
+                }
+                </text>
+            }
+        });
+    </script>
+}

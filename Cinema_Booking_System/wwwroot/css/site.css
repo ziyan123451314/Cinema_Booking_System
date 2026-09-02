@@ -1,0 +1,121 @@
+/* =============================================
+   CineMax - Main Site Stylesheet
+   ============================================= */
+
+/* --- Hero Section --- */
+.hero-section {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 50%, #0d2137 100%);
+    min-height: 380px;
+    display: flex;
+    align-items: center;
+}
+
+/* --- Movie Card --- */
+.movie-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.movie-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.movie-poster-wrapper {
+    position: relative;
+    overflow: hidden;
+    height: 280px;
+    background: #1a1a2e;
+}
+
+.movie-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.movie-card:hover .movie-poster {
+    transform: scale(1.04);
+}
+
+.movie-poster-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #2d3748, #4a5568);
+}
+
+/* --- Navbar --- */
+.navbar-brand {
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+}
+
+/* --- Buttons --- */
+.btn-warning {
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+/* --- Forms --- */
+.form-control:focus,
+.form-select:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+/* --- Alerts auto-dismiss --- */
+.alert {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Cart badge (navbar) --- */
+.cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    font-size: 10px;
+    padding: 2px 5px;
+}
+
+/* --- Footer --- */
+footer {
+    border-top: 3px solid #ffc107;
+}
+
+/* --- Breadcrumb --- */
+.breadcrumb-item a {
+    color: #0d6efd;
+    text-decoration: none;
+}
+.breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+/* --- Showtime card hover --- */
+.card:not(.movie-card) {
+    border-radius: 10px;
+}
+
+/* --- Payment method cards --- */
+.form-check.border {
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+.form-check.border:has(.form-check-input:checked) {
+    border-color: #0d6efd !important;
+    background: #e8f0fe;
+}
+
+/* --- Responsive tables --- */
+@media (max-width: 576px) {
+    .table-responsive .btn-group {
+        flex-direction: column;
+    }
+}

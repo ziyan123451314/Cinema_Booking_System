@@ -1,0 +1,55 @@
+## Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio & VS Code files
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## JetBrains / Rider
+.idea/
+*.sln.iml
+
+## Published output
+[Pp]ublish/
+
+## NuGet packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+## Local database files
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+*.sqlite
+*.sqlite3
+
+## OS-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Local environment / secrets configuration
+appsettings.*.local.json
+appsettings.local.json
+secrets.json

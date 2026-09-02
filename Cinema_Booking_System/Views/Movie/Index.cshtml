@@ -1,0 +1,123 @@
+@model CinemaBookingSystem.Models.ViewModels.MovieCatalogViewModel
+@{
+    ViewData["Title"] = "Movie Catalog";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4"><i class="bi bi-film me-2 text-primary"></i>Movie Catalog</h2>
+
+    <!-- Search & Filter -->
+    <form asp-action="Index" method="get" class="mb-4">
+        <div class="row g-3 align-items-end">
+            <!-- 搜索框 -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input name="search" value="@Model.SearchTerm" class="form-control" placeholder="Title, director, genre..." />
+                </div>
+            </div>
+            <!-- 分类选择 -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Category</label>
+                <select name="categoryId" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <option value="@cat.Id" selected="@(Model.CategoryId == cat.Id)">@cat.Name</option>
+                    }
+                </select>
+            </div>
+            <!-- 新增：排序下拉菜单 -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Sort By</label>
+                <select name="sortOrder" class="form-select" onchange="this.form.submit()">
+                    <option value="">Default</option>
+                    <option value="name_asc" selected="@(ViewBag.SortOrder == "name_asc")">A-Z</option>
+                    <option value="price_asc" selected="@(ViewBag.SortOrder == "price_asc")">Price: Low to High</option>
+                    <option value="duration_asc" selected="@(ViewBag.SortOrder == "duration_asc")">Duration: Short to Long</option>
+                </select>
+            </div>
+            <!-- 按钮 -->
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Movie Grid -->
+    @if (!Model.Movies.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-film display-1 text-muted"></i>
+            <p class="mt-3 text-muted">No movies found matching your criteria.</p>
+            <a asp-action="Index" class="btn btn-outline-primary mt-2">View All Movies</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var movie in Model.Movies)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-4">
+                    <div class="card h-100 movie-card shadow-sm border-0">
+                        <div class="movie-poster-wrapper">
+                            @if (!string.IsNullOrEmpty(movie.ImagePath))
+                            {
+                                <img src="@movie.ImagePath" class="card-img-top movie-poster" alt="@movie.Title" />
+                            }
+                            else
+                            {
+                                <div class="movie-poster-placeholder d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-film display-1 text-muted"></i>
+                                </div>
+                            }
+                            <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">@movie.Category?.Name</span>
+                            <span class="badge bg-dark position-absolute top-0 end-0 m-2">@movie.Rating</span>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">@movie.Title</h5>
+                            <p class="text-muted small mb-2">
+                                @if (!string.IsNullOrEmpty(movie.Director)) { <span><i class="bi bi-person-video me-1"></i>@movie.Director</span> }
+                                &nbsp;|&nbsp;<i class="bi bi-clock me-1"></i>@movie.Duration min
+                                &nbsp;|&nbsp;<i class="bi bi-translate me-1"></i>@movie.Language
+                            </p>
+                            <p class="card-text small text-muted flex-grow-1">
+                                @(movie.Description?.Length > 100 ? movie.Description.Substring(0, 100) + "..." : movie.Description)
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="fw-bold text-primary fs-5">RM @movie.Price.ToString("F2")</span>
+                                <a asp-action="Detail" asp-route-id="@movie.Id" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-ticket-perforated me-1"></i>Book Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="mt-4 d-flex justify-content-center">
+                <ul class="pagination">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-search="@Model.SearchTerm"
+                               asp-route-categoryId="@Model.CategoryId"
+                               asp-route-sortOrder="@ViewBag.SortOrder" 
+                               asp-route-page="@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>

@@ -1,0 +1,118 @@
+@{
+    ViewData["Title"] = "Home";
+}
+@model IEnumerable<CinemaBookingSystem.Models.Movie>
+
+<!-- Hero Section -->
+<section class="hero-section text-white text-center py-5">
+    <div class="container py-4">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="bi bi-camera-reels-fill text-warning me-3"></i>Welcome to CineMax
+        </h1>
+        <p class="lead mb-4">Experience the magic of cinema. Book your tickets online, anytime.</p>
+        <a asp-controller="Movie" asp-action="Index" class="btn btn-warning btn-lg px-5 shadow">
+            <i class="bi bi-search me-2"></i>Browse Movies
+        </a>
+    </div>
+</section>
+
+<!-- Featured Movies -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold"><i class="bi bi-star-fill text-warning me-2"></i>Now Showing</h2>
+            <a asp-controller="Movie" asp-action="Index" class="btn btn-outline-primary">View All <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+        <div class="row g-4">
+            @foreach (var movie in Model)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 movie-card shadow-sm border-0">
+                        <div class="movie-poster-wrapper">
+                            @if (!string.IsNullOrEmpty(movie.ImagePath))
+                            {
+                                <img src="@movie.ImagePath" class="card-img-top movie-poster" alt="@movie.Title" />
+                            }
+                            else
+                            {
+                                <div class="movie-poster-placeholder d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-film display-1 text-muted"></i>
+                                </div>
+                            }
+                            <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">@movie.Rating</span>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title fw-bold mb-1">@movie.Title</h6>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-tag-fill me-1"></i>@movie.Category?.Name &nbsp;|&nbsp;
+                                <i class="bi bi-clock me-1"></i>@movie.Duration min
+                            </p>
+                            <p class="text-muted small flex-grow-1">@(movie.Description?.Length > 80 ? movie.Description.Substring(0, 80) + "..." : movie.Description)</p>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="fw-bold text-primary">From RM @movie.Price.ToString("F2")</span>
+                                <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id"
+                                   class="btn btn-sm btn-warning">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Browse by Category -->
+@if (ViewBag.Categories != null)
+{
+    <section class="py-4 bg-light">
+        <div class="container">
+            <h2 class="fw-bold mb-4"><i class="bi bi-grid-fill text-primary me-2"></i>Browse by Genre</h2>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var cat in (IEnumerable<CinemaBookingSystem.Models.Category>)ViewBag.Categories)
+                {
+                    <a asp-controller="Movie" asp-action="Index" asp-route-categoryId="@cat.Id"
+                       class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-tag me-1"></i>@cat.Name
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Why Choose Us -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="fw-bold text-center mb-5">Why Choose CineMax?</h2>
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="p-4 rounded-3 bg-warning bg-opacity-10 h-100">
+                    <i class="bi bi-ticket-perforated-fill display-4 text-warning mb-3"></i>
+                    <h5 class="fw-bold">Easy Booking</h5>
+                    <p class="text-muted small">Book tickets in seconds with our simple checkout process.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4 rounded-3 bg-primary bg-opacity-10 h-100">
+                    <i class="bi bi-shield-lock-fill display-4 text-primary mb-3"></i>
+                    <h5 class="fw-bold">Secure Payment</h5>
+                    <p class="text-muted small">Multiple payment options, fully encrypted and secure.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4 rounded-3 bg-success bg-opacity-10 h-100">
+                    <i class="bi bi-display-fill display-4 text-success mb-3"></i>
+                    <h5 class="fw-bold">Premium Screens</h5>
+                    <p class="text-muted small">State-of-the-art screens for the ultimate viewing experience.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4 rounded-3 bg-danger bg-opacity-10 h-100">
+                    <i class="bi bi-clock-history display-4 text-danger mb-3"></i>
+                    <h5 class="fw-bold">Order History</h5>
+                    <p class="text-muted small">Track all your bookings and access past order details anytime.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

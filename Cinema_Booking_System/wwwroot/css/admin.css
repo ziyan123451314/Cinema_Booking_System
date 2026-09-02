@@ -1,0 +1,97 @@
+/* =============================================
+   CineMax Admin Panel Stylesheet
+   ============================================= */
+
+body.admin-body {
+    background: #f4f6fb;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* --- Sidebar --- */
+.admin-sidebar {
+    transition: width 0.2s;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+}
+
+.admin-sidebar .nav-link {
+    border-radius: 8px;
+    padding: 0.55rem 1rem;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+
+.admin-sidebar .nav-link:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.admin-sidebar .nav-link.active {
+    font-weight: 600;
+}
+
+/* --- Stat Cards --- */
+.card {
+    border-radius: 12px;
+}
+
+.card .display-4 {
+    opacity: 0.85;
+}
+
+/* --- Tables --- */
+.table th {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.table-hover tbody tr:hover {
+    background: #f0f4ff;
+}
+
+/* --- Buttons --- */
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+/* --- Image upload box --- */
+#imagePreviewBox {
+    background: #f8f9fa;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+#imagePreviewBox:hover {
+    background: #e9ecef;
+    border-color: #0d6efd !important;
+}
+
+/* --- Avatar circle --- */
+.avatar-circle {
+    user-select: none;
+}
+
+/* --- Alerts --- */
+.alert {
+    border-radius: 10px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Pagination --- */
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}

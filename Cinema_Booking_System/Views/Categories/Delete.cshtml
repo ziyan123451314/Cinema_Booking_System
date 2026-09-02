@@ -1,0 +1,36 @@
+@model CinemaBookingSystem.Models.Category
+@{
+    ViewData["Title"] = "Delete Category";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0 text-danger"><i class="bi bi-trash me-2"></i>Delete Category</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+
+<div class="card border-danger border-0 shadow-sm" style="max-width:500px">
+    <div class="card-header bg-danger text-white">
+        <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+    </div>
+    <div class="card-body">
+        <p class="mb-3">Are you sure you want to delete the category <strong>@Model.Name</strong>?</p>
+        @if (Model.Movies.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                This category has <strong>@Model.Movies.Count</strong> movie(s) assigned. Deletion is not allowed.
+            </div>
+        }
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="d-flex gap-2">
+                @if (!Model.Movies.Any())
+                {
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Delete</button>
+                }
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,123 @@
+@model CinemaBookingSystem.Models.ViewModels.MovieDetailViewModel
+@{
+    ViewData["Title"] = Model.Movie.Title;
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Movie" asp-action="Index">Movies</a></li>
+            <li class="breadcrumb-item active">@Model.Movie.Title</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Poster -->
+        <div class="col-md-4">
+            @if (!string.IsNullOrEmpty(Model.Movie.ImagePath))
+            {
+                <img src="@Model.Movie.ImagePath" class="img-fluid rounded-3 shadow w-100" alt="@Model.Movie.Title" style="max-height:500px; object-fit:cover;" />
+            }
+            else
+            {
+                <div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center" style="height:400px;">
+                    <i class="bi bi-film display-1 text-white"></i>
+                </div>
+            }
+        </div>
+
+        <!-- Details -->
+        <div class="col-md-8">
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                <span class="badge bg-warning text-dark fs-6">@Model.Movie.Category?.Name</span>
+                <span class="badge bg-dark fs-6">@Model.Movie.Rating</span>
+                <span class="badge bg-primary fs-6">@Model.Movie.Language</span>
+            </div>
+            <h1 class="fw-bold mb-2">@Model.Movie.Title</h1>
+            <p class="text-muted mb-3">
+                <i class="bi bi-clock me-1"></i>@Model.Movie.Duration min
+                @if (!string.IsNullOrEmpty(Model.Movie.Director))
+                {
+                    <span>&nbsp;|&nbsp;<i class="bi bi-person-video me-1"></i>@Model.Movie.Director</span>
+                }
+                @if (Model.Movie.ReleasedAt.HasValue)
+                {
+                    <span>&nbsp;|&nbsp;<i class="bi bi-calendar3 me-1"></i>@Model.Movie.ReleasedAt.Value.ToString("dd MMM yyyy")</span>
+                }
+            </p>
+            @if (!string.IsNullOrEmpty(Model.Movie.Cast))
+            {
+                <p class="mb-2"><strong><i class="bi bi-people me-1"></i>Cast:</strong> @Model.Movie.Cast</p>
+            }
+            <p class="text-muted">@Model.Movie.Description</p>
+            <div class="mt-3">
+                <span class="fs-3 fw-bold text-primary">From RM @Model.Movie.Price.ToString("F2")</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Showtimes -->
+    <div class="mt-5">
+        <h3 class="fw-bold mb-3"><i class="bi bi-calendar-event me-2 text-primary"></i>Available Showtimes</h3>
+        @if (!Model.Showtimes.Any())
+        {
+            <div class="alert alert-info">No upcoming showtimes available for this movie.</div>
+        }
+        else
+        {
+            var grouped = Model.Showtimes.GroupBy(s => s.ShowDate.Date).OrderBy(g => g.Key);
+            @foreach (var dateGroup in grouped)
+            {
+                <div class="mb-4">
+                    <h5 class="fw-bold border-bottom pb-2">
+                        <i class="bi bi-calendar3 me-2 text-warning"></i>@dateGroup.Key.ToString("dddd, dd MMMM yyyy")
+                    </h5>
+                    <div class="row g-3">
+                        @foreach (var showtime in dateGroup)
+                        {
+                            <div class="col-sm-6 col-md-4">
+                                <div class="card border-0 shadow-sm h-100 @(showtime.AvailableSeats == 0 ? "opacity-50" : "")">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="fs-4 fw-bold text-primary">@showtime.ShowTime.ToString(@"hh\:mm")</span>
+                                            <span class="badge @(showtime.AvailableSeats > 20 ? "bg-success" : showtime.AvailableSeats > 0 ? "bg-warning text-dark" : "bg-danger")">
+                                                @(showtime.AvailableSeats > 0 ? $"{showtime.AvailableSeats} seats" : "Sold Out")
+                                            </span>
+                                        </div>
+                                        <p class="small text-muted mb-1">
+                                            <i class="bi bi-building me-1"></i>@showtime.Hall
+                                        </p>
+                                        <p class="fw-bold mb-2">RM @showtime.Price.ToString("F2") / ticket</p>
+                                        @if (showtime.AvailableSeats > 0)
+                                        {
+                                            @if (User.Identity?.IsAuthenticated == true)
+                                            {
+                                                <a asp-controller="Movie" asp-action="SeatMap"
+                                                   asp-route-showtimeId="@showtime.Id"
+                                                   class="btn btn-warning btn-sm w-100 fw-bold">
+                                                    <i class="bi bi-grid-3x3-gap me-1"></i>Select Seats
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-sm w-100">
+                                                    <i class="bi bi-box-arrow-in-right me-1"></i>Login to Book
+                                                </a>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-secondary btn-sm w-100" disabled>Sold Out</button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

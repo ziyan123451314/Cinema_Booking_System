@@ -1,0 +1,105 @@
+@model CinemaBookingSystem.Models.ViewModels.AdminOrderListViewModel
+@{
+    ViewData["Title"] = "Order Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Order Management</h2>
+</div>
+
+<!-- Filters -->
+<form asp-action="Index" method="get" class="mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Search</label>
+            <input name="search" value="@Model.SearchTerm" class="form-control" placeholder="Customer name or email..." />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                @foreach (var s in Enum.GetValues<CinemaBookingSystem.Models.OrderStatus>())
+                {
+                    <option value="@s" selected="@(Model.StatusFilter == s.ToString())">@s</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Filter</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
+<!-- Status Summary Badges -->
+<div class="d-flex flex-wrap gap-2 mb-3">
+    @foreach (var status in Enum.GetValues<CinemaBookingSystem.Models.OrderStatus>())
+    {
+        var count = Model.Orders.Count(o => o.Status == status);
+        <a asp-action="Index" asp-route-status="@status"
+           class="badge text-decoration-none fs-6 @(status == CinemaBookingSystem.Models.OrderStatus.Completed ? "bg-success" :
+                                                    status == CinemaBookingSystem.Models.OrderStatus.Confirmed ? "bg-primary" :
+                                                    status == CinemaBookingSystem.Models.OrderStatus.Cancelled ? "bg-danger" : "bg-warning text-dark")">
+            @status: @count
+        </a>
+    }
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th class="text-center">Items</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-center">Payment</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td class="fw-bold">#@order.Id</td>
+                            <td>
+                                <div class="fw-semibold">@(order.User?.FullName ?? order.ContactName)</div>
+                                <small class="text-muted">@order.ContactEmail</small>
+                            </td>
+                            <td>@order.OrderDate.ToString("dd MMM yyyy HH:mm")</td>
+                            <td class="text-center">@order.OrderItems.Count</td>
+                            <td class="text-end fw-bold">RM @order.TotalAmount.ToString("F2")</td>
+                            <td class="text-center">
+                                <span class="badge @(order.PaymentStatus == CinemaBookingSystem.Models.PaymentStatus.Paid ? "bg-success" :
+                                                     order.PaymentStatus == CinemaBookingSystem.Models.PaymentStatus.Refunded ? "bg-info" : "bg-secondary")">
+                                    @order.PaymentStatus
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @(order.Status == CinemaBookingSystem.Models.OrderStatus.Completed ? "bg-success" :
+                                                     order.Status == CinemaBookingSystem.Models.OrderStatus.Confirmed ? "bg-primary" :
+                                                     order.Status == CinemaBookingSystem.Models.OrderStatus.Cancelled ? "bg-danger" : "bg-warning text-dark")">
+                                    @order.Status
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Detail" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Orders.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-4">No orders found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

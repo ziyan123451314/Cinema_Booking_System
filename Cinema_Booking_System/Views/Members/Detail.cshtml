@@ -1,0 +1,80 @@
+@model CinemaBookingSystem.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Member Detail";
+    Layout = "_AdminLayout";
+    var orders = ViewBag.Orders as IEnumerable<CinemaBookingSystem.Models.Order>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-person-circle me-2 text-primary"></i>Member Detail</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-4">
+                <div class="avatar-xl bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                     style="width:80px;height:80px;font-size:32px;font-weight:bold;">
+                    @(Model?.FullName?.Length > 0 ? Model.FullName[0].ToString().ToUpper() : "?")
+                </div>
+                <h5 class="fw-bold">@Model?.FullName</h5>
+                <p class="text-muted mb-1">@Model?.Email</p>
+                <p class="text-muted mb-3">@(Model?.Phone ?? "No phone")</p>
+                <span class="badge fs-6 @(Model?.IsActive == true ? "bg-success" : "bg-danger")">
+                    @(Model?.IsActive == true ? "Active" : "Disabled")
+                </span>
+            </div>
+            <div class="card-footer bg-light">
+                <dl class="row mb-0 small">
+                    <dt class="col-6">Registered</dt>
+                    <dd class="col-6">@Model?.CreatedAt.ToString("dd MMM yyyy")</dd>
+                    <dt class="col-6">Total Orders</dt>
+                    <dd class="col-6">@(orders?.Count() ?? 0)</dd>
+                    <dt class="col-6">Total Spent</dt>
+                    <dd class="col-6">RM @(orders?.Where(o => o.Status != CinemaBookingSystem.Models.OrderStatus.Cancelled).Sum(o => o.TotalAmount).ToString("F2") ?? "0.00")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white fw-bold">Order History</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr><th>#</th><th>Date</th><th>Items</th><th class="text-end">Total</th><th>Status</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            @if (orders != null && orders.Any())
+                            {
+                                @foreach (var order in orders)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">#@order.Id</td>
+                                        <td>@order.OrderDate.ToString("dd MMM yyyy")</td>
+                                        <td>@order.OrderItems.Count tickets</td>
+                                        <td class="text-end">RM @order.TotalAmount.ToString("F2")</td>
+                                        <td>
+                                            <span class="badge @(order.Status == CinemaBookingSystem.Models.OrderStatus.Completed ? "bg-success" :
+                                                                  order.Status == CinemaBookingSystem.Models.OrderStatus.Confirmed ? "bg-primary" :
+                                                                  order.Status == CinemaBookingSystem.Models.OrderStatus.Cancelled ? "bg-danger" : "bg-warning text-dark")">
+                                                @order.Status
+                                            </span>
+                                        </td>
+                                        <td><a href="/Admin/Orders/Detail/@order.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="6" class="text-center text-muted py-3">No orders yet.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,498 @@
+@model CinemaBookingSystem.Models.Showtime
+@{
+    ViewData["Title"] = $"Select Seats — {Model.Movie?.Title}";
+    Layout = "_Layout";
+
+    // Calculate rows and columns from TotalSeats
+    int cols = 10;
+    int totalRows = (int)Math.Ceiling(Model.TotalSeats / (double)cols);
+    char lastRow = (char)('A' + totalRows - 1);
+}
+
+<style>
+    /* ── Page base ─────────────────────────────── */
+    .seatmap-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 50%, #24243e 100%);
+        padding: 2rem 0;
+    }
+
+    /* ── Breadcrumb ────────────────────────────── */
+    .seatmap-page .breadcrumb-item a { color: #a78bfa; }
+    .seatmap-page .breadcrumb-item.active { color: #e2e8f0; }
+    .seatmap-page .breadcrumb-item + .breadcrumb-item::before { color: #6b7280; }
+
+    /* ── Movie info banner ─────────────────────── */
+    .movie-banner {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px;
+        backdrop-filter: blur(12px);
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #e2e8f0;
+    }
+    .movie-banner h2 { color: #fff; font-weight: 800; margin-bottom: .25rem; }
+    .movie-banner .badge-info { background: rgba(167,139,250,0.2); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); border-radius: 20px; padding: .25rem .75rem; font-size: .8rem; }
+
+    /* ── Screen ───────────────────────────────── */
+    .screen-wrapper { text-align: center; margin-bottom: 2rem; }
+    .screen-bar {
+        display: inline-block;
+        width: min(640px, 100%);
+        height: 14px;
+        background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 60%, transparent 100%);
+        border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        box-shadow: 0 -6px 40px rgba(167,139,250,0.5);
+        margin-bottom: .4rem;
+    }
+    .screen-label { color: #9ca3af; font-size: .78rem; letter-spacing: 4px; text-transform: uppercase; }
+
+    /* ── Seat grid ────────────────────────────── */
+    .seat-grid { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .seat-row { display: flex; align-items: center; gap: 8px; }
+    .row-label {
+        width: 22px; text-align: center;
+        color: #6b7280; font-size: .75rem; font-weight: 700;
+        flex-shrink: 0;
+    }
+    .seat-gap { width: 20px; } /* aisle gap */
+
+    /* ── Individual seat ──────────────────────── */
+    .seat {
+        width: 34px; height: 30px;
+        border-radius: 6px 6px 4px 4px;
+        border: none;
+        cursor: pointer;
+        transition: transform .15s, box-shadow .15s, background .15s;
+        font-size: .65rem;
+        font-weight: 700;
+        color: transparent; /* hide label by default */
+        position: relative;
+        outline: none;
+    }
+    .seat::after {
+        content: attr(data-label);
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity .15s;
+        font-size: .6rem;
+        color: inherit;
+    }
+    .seat:hover::after { opacity: 1; }
+
+    /* Available */
+    .seat.available {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        box-shadow: 0 3px 8px rgba(34,197,94,0.4);
+        color: #fff;
+    }
+    .seat.available:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 8px 20px rgba(34,197,94,0.6);
+    }
+
+    /* Selected */
+    .seat.selected {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        box-shadow: 0 3px 8px rgba(245,158,11,0.5);
+        color: #fff;
+    }
+    .seat.selected::after { opacity: 1; }
+    .seat.selected:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 8px 20px rgba(245,158,11,0.7);
+    }
+
+    /* Taken */
+    .seat.taken {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        box-shadow: 0 2px 6px rgba(239,68,68,0.3);
+        cursor: not-allowed;
+        opacity: .7;
+        color: #fff;
+    }
+    .seat.taken:hover { transform: none; }
+    .seat.taken::after { opacity: 1; }
+
+    /* ── Legend ───────────────────────────────── */
+    .legend { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 1.5rem 0; }
+    .legend-item { display: flex; align-items: center; gap: .5rem; color: #d1d5db; font-size: .85rem; }
+    .legend-dot {
+        width: 20px; height: 18px; border-radius: 4px 4px 3px 3px;
+    }
+    .legend-dot.available { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .legend-dot.selected  { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .legend-dot.taken     { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+    /* ── Summary panel ────────────────────────── */
+    .summary-panel {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 16px;
+        padding: 1.5rem;
+        color: #e2e8f0;
+        backdrop-filter: blur(12px);
+        position: sticky;
+        top: 80px;
+    }
+    .summary-panel h5 { color: #fff; font-weight: 700; margin-bottom: 1rem; }
+    .summary-line { display: flex; justify-content: space-between; margin-bottom: .5rem; font-size: .9rem; }
+    .summary-line .val { color: #a78bfa; font-weight: 600; }
+    .summary-divider { border-color: rgba(255,255,255,0.1); margin: .75rem 0; }
+    .summary-total { font-size: 1.1rem; font-weight: 800; color: #fff; }
+    .selected-seat-tags { display: flex; flex-wrap: wrap; gap: .4rem; min-height: 36px; }
+    .seat-tag {
+        background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.5);
+        color: #f59e0b; border-radius: 20px; padding: .15rem .6rem; font-size: .78rem; font-weight: 700;
+    }
+    .btn-confirm {
+        background: linear-gradient(135deg, #a78bfa, #7c3aed);
+        border: none; color: #fff; width: 100%;
+        border-radius: 12px; padding: .75rem; font-weight: 700; font-size: 1rem;
+        transition: opacity .2s, transform .2s;
+        margin-top: 1rem;
+    }
+    .btn-confirm:hover:not(:disabled) { opacity: .88; transform: translateY(-2px); color: #fff; }
+    .btn-confirm:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-back {
+        display: block; text-align: center; margin-top: .75rem;
+        color: #9ca3af; text-decoration: none; font-size: .85rem;
+        transition: color .2s;
+    }
+    .btn-back:hover { color: #e2e8f0; }
+
+    /* ── Loading overlay ──────────────────────── */
+    #loadingOverlay {
+        position: fixed; inset: 0; background: rgba(10,10,30,0.85);
+        display: flex; align-items: center; justify-content: center; z-index: 9999;
+    }
+    .spinner-ring {
+        width: 54px; height: 54px; border-radius: 50%;
+        border: 5px solid rgba(167,139,250,.2);
+        border-top-color: #a78bfa;
+        animation: spin .8s linear infinite;
+    }
+    @@keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ────────────────────────────── */
+    @@media (max-width: 600px) {
+        .seat { width: 28px; height: 26px; border-radius: 5px 5px 3px 3px; }
+        .seat-row { gap: 5px; }
+        .seat-grid { gap: 7px; }
+    }
+</style>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+    <div class="spinner-ring"></div>
+</div>
+
+<div class="seatmap-page">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Movie" asp-action="Index">Movies</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Movie" asp-action="Detail" asp-route-id="@Model.MovieId">@Model.Movie?.Title</a></li>
+                <li class="breadcrumb-item active" style="color:#e2e8f0;">Select Seats</li>
+            </ol>
+        </nav>
+
+        <!-- Movie banner -->
+        <div class="movie-banner">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                <div>
+                    <h2 class="mb-1">@Model.Movie?.Title</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge-info"><i class="bi bi-calendar3 me-1"></i>@Model.ShowDate.ToString("ddd, dd MMM yyyy")</span>
+                        <span class="badge-info"><i class="bi bi-clock me-1"></i>@Model.ShowTime.ToString(@"hh\:mm")</span>
+                        <span class="badge-info"><i class="bi bi-building me-1"></i>@Model.Hall</span>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div style="color:#a78bfa; font-size:1.4rem; font-weight:800;">RM @Model.Price.ToString("F2")</div>
+                    <div style="color:#9ca3af; font-size:.8rem;">per ticket</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Seat map column -->
+            <div class="col-lg-8">
+                <!-- Screen -->
+                <div class="screen-wrapper">
+                    <div class="screen-bar"></div>
+                    <div class="screen-label">screen</div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-dot available"></div>Available</div>
+                    <div class="legend-item"><div class="legend-dot selected"></div>Your Selection</div>
+                    <div class="legend-item"><div class="legend-dot taken"></div>Taken</div>
+                </div>
+
+                <!-- Seat grid (generated by JS) -->
+                <div class="seat-grid" id="seatGrid"></div>
+
+                <!-- Row label key -->
+                <div class="text-center mt-3" style="color:#4b5563; font-size:.75rem;">
+                    Rows A–@lastRow &nbsp;·&nbsp; @cols seats per row &nbsp;·&nbsp; @Model.TotalSeats total seats
+                </div>
+            </div>
+
+            <!-- Summary panel column -->
+            <div class="col-lg-4">
+                <div class="summary-panel">
+                    <h5><i class="bi bi-ticket-perforated me-2" style="color:#a78bfa;"></i>Your Seats</h5>
+
+                    <div class="summary-line">
+                        <span>Selected</span>
+                        <span class="val" id="selectedCount">0</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Price / Seat</span>
+                        <span class="val">RM @Model.Price.ToString("F2")</span>
+                    </div>
+                    <hr class="summary-divider">
+                    <div class="summary-line summary-total">
+                        <span>Total</span>
+                        <span id="totalPrice">RM 0.00</span>
+                    </div>
+
+                    <div class="mt-3 mb-1" style="color:#9ca3af; font-size:.8rem;">Chosen seats:</div>
+                    <div class="selected-seat-tags" id="seatTags">
+                        <span style="color:#4b5563; font-size:.8rem; padding:.15rem 0;">None yet</span>
+                    </div>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <form id="addToCartForm" asp-controller="Cart" asp-action="Add" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="ShowtimeId" value="@Model.Id" />
+                            <input type="hidden" name="Quantity" id="hiddenQuantity" value="0" />
+                            <input type="hidden" name="SeatLabels" id="hiddenSeatLabels" value="" />
+                            <button type="submit" id="btnConfirm" class="btn-confirm" disabled>
+                                <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn-confirm d-block text-center text-decoration-none mt-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login to Book
+                        </a>
+                    }
+
+                    <a asp-controller="Movie" asp-action="Detail" asp-route-id="@Model.MovieId" class="btn-back">
+                        ← Back to showtimes
+                    </a>
+
+                    <div class="mt-3 pt-2" style="border-top:1px solid rgba(255,255,255,0.08); color:#6b7280; font-size:.75rem; text-align:center;">
+                        <i class="bi bi-shield-check me-1" style="color:#22c55e;"></i>
+                        Seats held for 10 min after adding to cart
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    const SHOWTIME_ID  = @Model.Id;
+    const TOTAL_SEATS  = @Model.TotalSeats;
+    const COLS         = 10;
+    const PRICE_PER    = @Model.Price;
+    const TOTAL_ROWS   = Math.ceil(TOTAL_SEATS / COLS);
+
+    let takenSeats   = new Set();
+    let selectedSeats = new Set();
+
+    // ── Build the grid ──────────────────────────────────────────────────────
+    function buildGrid() {
+        const grid = document.getElementById('seatGrid');
+        grid.innerHTML = '';
+        let seatNumber = 0;
+
+        for (let r = 0; r < TOTAL_ROWS; r++) {
+            const rowChar = String.fromCharCode(65 + r); // A, B, C...
+            const row = document.createElement('div');
+            row.className = 'seat-row';
+
+            // Row label
+            const lbl = document.createElement('div');
+            lbl.className = 'row-label';
+            lbl.textContent = rowChar;
+            row.appendChild(lbl);
+
+            for (let c = 1; c <= COLS; c++) {
+                seatNumber++;
+                if (seatNumber > TOTAL_SEATS) break;
+
+                // Aisle gap after column 5
+                if (c === 6) {
+                    const gap = document.createElement('div');
+                    gap.className = 'seat-gap';
+                    row.appendChild(gap);
+                }
+
+                const label = `${rowChar}${c}`;
+                const btn = document.createElement('button');
+                btn.className = 'seat available';
+                btn.setAttribute('data-label', label);
+                btn.setAttribute('title', label);
+                btn.setAttribute('aria-label', `Seat ${label}`);
+                btn.id = `seat-${label}`;
+                btn.addEventListener('click', () => toggleSeat(label, btn));
+                row.appendChild(btn);
+            }
+
+            grid.appendChild(row);
+        }
+    }
+
+    // ── Toggle seat selection ───────────────────────────────────────────────
+    function toggleSeat(label, btn) {
+        if (takenSeats.has(label)) return; // can't click taken
+
+        if (selectedSeats.has(label)) {
+            selectedSeats.delete(label);
+            btn.className = 'seat available';
+        } else {
+            selectedSeats.add(label);
+            btn.className = 'seat selected';
+        }
+        updateSummary();
+    }
+
+    // ── Mark taken seats from server ────────────────────────────────────────
+    function applyTaken(taken) {
+        taken.forEach(label => {
+            takenSeats.add(label);
+            const btn = document.getElementById(`seat-${label}`);
+            if (btn) btn.className = 'seat taken';
+        });
+    }
+
+    // ── Update summary panel ────────────────────────────────────────────────
+    function updateSummary() {
+        const count = selectedSeats.size;
+        const total = count * PRICE_PER;
+
+        document.getElementById('selectedCount').textContent = count;
+        document.getElementById('totalPrice').textContent = 'RM ' + total.toFixed(2);
+        document.getElementById('hiddenQuantity').value = count;
+        document.getElementById('hiddenSeatLabels').value = [...selectedSeats].join(',');
+
+        const confirmBtn = document.getElementById('btnConfirm');
+        if (confirmBtn) confirmBtn.disabled = count === 0;
+
+        // Seat tags
+        const tagsDiv = document.getElementById('seatTags');
+        if (count === 0) {
+            tagsDiv.innerHTML = '<span style="color:#4b5563; font-size:.8rem; padding:.15rem 0;">None yet</span>';
+        } else {
+            tagsDiv.innerHTML = [...selectedSeats]
+                .sort()
+                .map(s => `<span class="seat-tag">${s}</span>`)
+                .join('');
+        }
+    }
+
+    // ── AJAX form submit ────────────────────────────────────────────────────
+    const form = document.getElementById('addToCartForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (selectedSeats.size === 0) return;
+
+            const btn = document.getElementById('btnConfirm');
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+            btn.disabled = true;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, true);
+                    // Update cart badge in navbar
+                    const badge = document.getElementById('cartBadge');
+                    if (badge) {
+                        badge.innerText = data.cartCount;
+                        badge.style.display = 'inline-block';
+                    }
+                    // Mark selected seats as taken
+                    selectedSeats.forEach(label => {
+                        takenSeats.add(label);
+                        const seatBtn = document.getElementById(`seat-${label}`);
+                        if (seatBtn) seatBtn.className = 'seat taken';
+                    });
+                    selectedSeats.clear();
+                    updateSummary();
+                } else {
+                    showToast(data.message, false);
+                    // Refresh taken seats in case of race condition
+                    fetchTakenSeats();
+                }
+            })
+            .catch(() => showToast('An error occurred. Please try again.', false))
+            .finally(() => {
+                btn.innerHTML = origHtml;
+                btn.disabled = selectedSeats.size === 0;
+            });
+        });
+    }
+
+    // ── Toast notification ──────────────────────────────────────────────────
+    function showToast(message, isSuccess) {
+        const html = `
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1090;">
+                <div class="toast align-items-center text-white bg-${isSuccess ? 'success' : 'danger'} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body fw-semibold">
+                            <i class="bi bi-${isSuccess ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            </div>`;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        document.body.appendChild(wrapper);
+        const toastEl = wrapper.querySelector('.toast');
+        const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+        toast.show();
+        toastEl.addEventListener('hidden.bs.toast', () => wrapper.remove());
+    }
+
+    // ── Fetch taken seats from server ───────────────────────────────────────
+    function fetchTakenSeats() {
+        return fetch(`/Movie/TakenSeats?showtimeId=${SHOWTIME_ID}`)
+            .then(r => r.json())
+            .then(taken => applyTaken(taken));
+    }
+
+    // ── Init ────────────────────────────────────────────────────────────────
+    buildGrid();
+    fetchTakenSeats().finally(() => {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    });
+
+    // Refresh taken seats every 20 seconds to pick up other users' bookings
+    setInterval(fetchTakenSeats, 20000);
+})();
+</script>
+}

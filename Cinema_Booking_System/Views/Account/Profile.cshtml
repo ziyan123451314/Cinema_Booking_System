@@ -1,0 +1,83 @@
+@model CinemaBookingSystem.Models.ViewModels.UserProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row g-4 justify-content-center">
+        <!-- 1. 个人基本信息卡片 -->
+        <div class="col-lg-6">
+            <div class="card shadow border-0 rounded-4 h-100">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>My Profile</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Profile" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            <input name="FullName" value="@Model.User?.FullName" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input value="@Model.User?.Email" class="form-control" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Phone</label>
+                            <input name="Phone" value="@Model.User?.Phone" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Address</label>
+                            <textarea name="Address" class="form-control" rows="3">@Model.User?.Address</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Member Since</label>
+                            <input value="@Model.User?.CreatedAt.ToString("dd MMM yyyy")" class="form-control" disabled />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-save me-2"></i>Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 重置密码卡片 -->
+        <div class="col-lg-6">
+            <div class="card shadow border-0 rounded-4 h-100">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Reset Password</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="ChangePassword" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ChangePassword.CurrentPassword" class="form-label fw-semibold"></label>
+                            <input asp-for="ChangePassword.CurrentPassword" class="form-control" placeholder="Enter current password" />
+                            <span asp-validation-for="ChangePassword.CurrentPassword" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ChangePassword.NewPassword" class="form-label fw-semibold"></label>
+                            <input asp-for="ChangePassword.NewPassword" class="form-control" placeholder="Enter new password (min. 6 characters)" />
+                            <span asp-validation-for="ChangePassword.NewPassword" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ChangePassword.ConfirmNewPassword" class="form-label fw-semibold"></label>
+                            <input asp-for="ChangePassword.ConfirmNewPassword" class="form-control" placeholder="Confirm your new password" />
+                            <span asp-validation-for="ChangePassword.ConfirmNewPassword" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="bi bi-key me-2"></i>Update Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
